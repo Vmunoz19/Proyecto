@@ -1,0 +1,126 @@
+{% extends "home.html" %}
+{% block title %}Registrar Rol{% endblock %}
+{% block extra_css %}
+<!-- (Estilos que ya tenías) -->
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>Registrar Rol de Pago</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Empleado -->
+                <div class="mb-3">
+                    <label class="form-label" for="id_empleado">Empleado</label>
+                    <select name="empleado" class="form-select" id="id_empleado" required>
+                        {% for emp in empleados %}
+                            <option value="{{ emp.id }}" data-sueldo="{{ emp.sueldo }}"
+                                {% if form.instance.empleado.id == emp.id %}selected{% endif %}>
+                                {{ emp.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Año/Mes -->
+                <div class="mb-3">
+                    <label class="form-label" for="id_aniomes">Fecha</label>
+                    {{ form.aniomes }}
+                </div>
+
+                <!-- Horas Extra -->
+                <div class="mb-3">
+                    <label class="form-label" for="id_horas_extra">Horas Extra</label>
+                    {{ form.horas_extra }}
+                </div>
+
+                <!-- Bono -->
+                <div class="mb-3">
+                    <label class="form-label" for="id_bono">Bono</label>
+                    {{ form.bono }}
+                </div>
+
+                <!-- Sueldo mostrado -->
+                <div class="mb-3">
+                    <label class="form-label">Sueldo</label>
+                    <input type="number" readonly class="form-control" id="sueldo_mostrado">
+                </div>
+
+                <!-- IESS -->
+                <div class="mb-3">
+                    <label class="form-label">IESS</label>
+                    {{ form.iess }}
+                </div>
+
+                <!-- Total Ingresos -->
+                <div class="mb-3">
+                    <label class="form-label">Total Ingresos</label>
+                    {{ form.tot_ing }}
+                </div>
+
+                <!-- Total Descuentos -->
+                <div class="mb-3">
+                    <label class="form-label">Total Descuentos</label>
+                    {{ form.tot_des }}
+                </div>
+
+                <!-- Neto a Recibir -->
+                <div class="mb-3">
+                    <label class="form-label">Neto a Recibir</label>
+                    {{ form.neto }}
+                </div>
+                <!-- Botones -->
+                <div class="d-flex justify-content-end">
+                    <a href="{% url 'core:rol_list' %}" class="btn btn-secondary me-2">Cancelar</a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i>Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JS para cálculo en tiempo real -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const select = document.getElementById("id_empleado");
+        const horas = document.getElementById("id_horas_extra");
+        const bono = document.getElementById("id_bono");
+
+        const sueldoMostrado = document.getElementById("sueldo_mostrado");
+        const iess = document.getElementById("id_iess");
+        const totIng = document.getElementById("id_tot_ing");
+        const totDes = document.getElementById("id_tot_des");
+        const neto = document.getElementById("id_neto");
+
+        function calcular() {
+            const sueldo = parseFloat(select.selectedOptions[0]?.getAttribute("data-sueldo")) || 0;
+            const h = parseFloat(horas.value) || 0;
+            const b = parseFloat(bono.value) || 0;
+
+            const i = sueldo * 0.0945;
+            const ti = sueldo + h + b;
+            const td = i;
+            const n = ti - td;
+
+            sueldoMostrado.value = sueldo.toFixed(2);
+            iess.value = i.toFixed(2);
+            totIng.value = ti.toFixed(2);
+            totDes.value = td.toFixed(2);
+            neto.value = n.toFixed(2);
+        }
+
+        select.addEventListener("change", calcular);
+        horas.addEventListener("input", calcular);
+        bono.addEventListener("input", calcular);
+
+        calcular();
+    });
+</script>
+{% endblock %}
